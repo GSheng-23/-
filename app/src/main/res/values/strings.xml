@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">晚点名助手</string>
+    <string name="status_placeholder">准备中…</string>
+    <string name="accessibility_service_label">晚点名助手无障碍服务</string>
+    <string name="accessibility_service_description">用于读取智汇福大界面并执行晚点名签到操作。仅在本机使用，不联网。</string>
+    <string name="accessibility_status_connected">无障碍：已连接</string>
+    <string name="accessibility_status_disconnected">无障碍：未连接</string>
+    <string name="btn_open_accessibility">去开启无障碍</string>
+    <string name="btn_dry_run">开始演练（不点击签到）</string>
+    <string name="btn_real_run">真实签到（21:00 后）</string>
+    <string name="btn_open_target">打开智汇福大</string>
+    <string name="logs_title">运行日志</string>
+    <string name="idle">空闲</string>
+    <string name="running">运行中</string>
+    <string name="done">完成</string>
+    <string name="unknown">结果不确定</string>
+    <string name="failed">失败</string>
+    <string name="real_run_title">真实签到</string>
+    <string name="real_run_message">将真实点击智汇福大的签到按钮。请确认：\n1）你本人当前在旗山校区；\n2）手机已解锁；\n3）智汇福大已登录。\n\n点击后如果 15 秒内没有读到“签到成功/已签到”，会标记为“结果不确定”，不会自动重复点击。</string>
+    <string name="real_run_confirm">确认签到</string>
+    <string name="cancel">取消</string>
+    <string name="outside_window">当前不在签到时段（21:00–23:59）</string>
+    <string name="notification_channel_name">运行结果</string>
+    <string name="notification_channel_desc">晚点名助手演练/签到结果</string>
+</resources>

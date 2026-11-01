@@ -1,0 +1,34 @@
+# Android / Gradle
+.gradle/
+**/build/
+local.properties
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+
+# Local Android toolchain (large, not source)
+tools/jdk17/
+tools/android-sdk/
+tools/gradle-8.11.1/
+tools/gradle-home/
+tools/android-home/
+tools/downloads/
+tools/NetTest.java
+
+# Real-device artifacts contain personal information (name/class/screenshots)
+artifacts/
+
+# Signing material
+*.jks
+*.keystore
+keystore.properties
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# APK: only keep the copy under dist/
+*.apk
+!dist/*.apk
