@@ -6,6 +6,9 @@
     <string name="accessibility_service_description">用于读取智汇福大界面并执行晚点名签到操作。仅在本机使用，不联网。</string>
     <string name="accessibility_status_connected">无障碍：已连接</string>
     <string name="accessibility_status_disconnected">无障碍：未连接</string>
+    <string name="next_run_placeholder">下次定时：--</string>
+    <string name="btn_exact_alarm">允许精确闹钟（定时更准）</string>
+    <string name="btn_overlay">允许后台弹出界面（锁屏定时更可靠）</string>
     <string name="btn_open_accessibility">去开启无障碍</string>
     <string name="btn_dry_run">开始演练（不点击签到）</string>
     <string name="btn_real_run">真实签到（21:00 后）</string>

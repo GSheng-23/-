@@ -1,10 +1,18 @@
 package com.rollcallhelper.app
 
 import android.Manifest
+import android.app.KeyguardManager
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
+import android.view.View
+import android.view.WindowManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -16,6 +24,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.rollcallhelper.app.automation.AutomationEngine
 import com.rollcallhelper.app.automation.RunState
 import com.rollcallhelper.app.databinding.ActivityMainBinding
+import com.rollcallhelper.app.schedule.SignInScheduler
 import java.time.LocalTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -24,9 +33,19 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private var autoStarted = false
+    private var launchFromAlarm = false
+    private var scheduleOnly = false
 
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
+
+    private val userPresentReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context?, intent: Intent?) {
+            if (intent?.action == Intent.ACTION_USER_PRESENT) {
+                maybeAutoStart(AutomationEngine.isServiceReady)
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,8 +53,56 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
         AutomationEngine.prepareNewLaunch()
 
+        scheduleOnly = intent.getBooleanExtra(SignInScheduler.EXTRA_SCHEDULE_ONLY, false)
+        if (scheduleOnly) {
+            val seconds = intent.getIntExtra(SignInScheduler.EXTRA_TEST_AFTER_SECONDS, 0)
+            if (seconds > 0) {
+                SignInScheduler.scheduleAt(this, System.currentTimeMillis() + seconds * 1_000L)
+            }
+            binding.runStatus.text = "测试定时：${SignInScheduler.nextTriggerText(this)}"
+            updateScheduleUi()
+            finish()
+            return
+        }
+
+        launchFromAlarm = intent.getBooleanExtra(SignInScheduler.EXTRA_FROM_ALARM, false)
+        if (launchFromAlarm) {
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+            getSystemService(KeyguardManager::class.java).requestDismissKeyguard(this, null)
+            binding.runStatus.text = "定时签到：请解锁手机，解锁后自动签到"
+        }
+
         binding.btnAccessibility.setOnClickListener {
-            startActivity(Intent(android.provider.Settings.ACTION_ACCESSIBILITY_SETTINGS))
+            startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS))
+        }
+
+        binding.btnExactAlarm.setOnClickListener {
+            runCatching {
+                startActivity(
+                    Intent(
+                        Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+            }.onFailure {
+                startActivity(
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.parse("package:$packageName")
+                    )
+                )
+            }
+        }
+
+        binding.btnOverlay.setOnClickListener {
+            startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
+                    Uri.parse("package:$packageName")
+                )
+            )
         }
 
         binding.btnDryRun.setOnClickListener {
@@ -86,11 +153,59 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+
+        ensureNotificationPermission()
+    }
+
+    override fun onStart() {
+        super.onStart()
+        ContextCompat.registerReceiver(
+            this,
+            userPresentReceiver,
+            IntentFilter(Intent.ACTION_USER_PRESENT),
+            ContextCompat.RECEIVER_NOT_EXPORTED
+        )
+    }
+
+    override fun onStop() {
+        runCatching { unregisterReceiver(userPresentReceiver) }
+        super.onStop()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding.serviceStatus.text = getString(
+            if (AutomationEngine.isServiceReady) R.string.accessibility_status_connected
+            else R.string.accessibility_status_disconnected
+        )
+        if (!scheduleOnly) {
+            SignInScheduler.scheduleNext(this)
+            updateScheduleUi()
+            maybeAutoStart(AutomationEngine.isServiceReady)
+        }
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        if (intent.getBooleanExtra(SignInScheduler.EXTRA_FROM_ALARM, false)) {
+            launchFromAlarm = true
+            setShowWhenLocked(true)
+            setTurnScreenOn(true)
+            getSystemService(KeyguardManager::class.java).requestDismissKeyguard(this, null)
+            binding.runStatus.text = "定时签到：请解锁手机，解锁后自动签到"
+            maybeAutoStart(AutomationEngine.isServiceReady)
+        }
     }
 
     private fun maybeAutoStart(serviceReady: Boolean) {
-        if (!serviceReady || autoStarted) return
+        if (scheduleOnly || !serviceReady || autoStarted) return
         if (AutomationEngine.state.value !is RunState.Idle) return
+
+        if (getSystemService(KeyguardManager::class.java).isKeyguardLocked) {
+            binding.runStatus.text = "请解锁手机，解锁后自动签到"
+            return
+        }
 
         val now = LocalTime.now()
         val windowOpen = !now.isBefore(LocalTime.of(21, 0)) && now.isBefore(LocalTime.of(23, 55))
@@ -108,12 +223,12 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding.serviceStatus.text = getString(
-            if (AutomationEngine.isServiceReady) R.string.accessibility_status_connected
-            else R.string.accessibility_status_disconnected
-        )
+    private fun updateScheduleUi() {
+        binding.nextRun.text = "下次定时：${SignInScheduler.nextTriggerText(this)}"
+        binding.btnExactAlarm.visibility =
+            if (SignInScheduler.canScheduleExact(this)) View.GONE else View.VISIBLE
+        binding.btnOverlay.visibility =
+            if (Settings.canDrawOverlays(this)) View.GONE else View.VISIBLE
     }
 
     private fun renderState(state: RunState) {

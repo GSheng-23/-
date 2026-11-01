@@ -27,6 +27,14 @@
             android:textSize="16sp" />
 
         <TextView
+            android:id="@+id/nextRun"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/next_run_placeholder"
+            android:textSize="14sp" />
+
+        <TextView
             android:id="@+id/runStatus"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -42,6 +50,24 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/btn_open_accessibility" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExactAlarm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/btn_exact_alarm"
+            android:visibility="gone"
+            app:backgroundTint="#666666" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOverlay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/btn_overlay"
+            android:visibility="gone"
+            app:backgroundTint="#666666" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnDryRun"
