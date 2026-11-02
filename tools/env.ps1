@@ -6,7 +6,9 @@ $env:ANDROID_HOME = Join-Path $root 'tools\android-sdk'
 $env:ANDROID_SDK_ROOT = $env:ANDROID_HOME
 $env:ANDROID_USER_HOME = Join-Path $root 'tools\android-home'
 $env:GRADLE_USER_HOME = Join-Path $root 'tools\gradle-home'
-New-Item -ItemType Directory -Force -Path $env:ANDROID_USER_HOME | Out-Null
+$env:TEMP = Join-Path $root 'tools\temp'
+$env:TMP = $env:TEMP
+New-Item -ItemType Directory -Force -Path $env:ANDROID_USER_HOME, $env:TEMP | Out-Null
 $env:PATH = "$env:JAVA_HOME\bin;$env:ANDROID_HOME\platform-tools;$root\tools\gradle-8.11.1\bin;$env:PATH"
 Write-Host "JAVA_HOME=$env:JAVA_HOME"
 Write-Host "ANDROID_HOME=$env:ANDROID_HOME"

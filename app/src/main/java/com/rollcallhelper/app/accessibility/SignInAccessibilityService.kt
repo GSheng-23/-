@@ -7,6 +7,7 @@ import android.os.SystemClock
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import com.rollcallhelper.app.automation.AutomationEngine
+import com.rollcallhelper.app.service.KeepAliveService
 import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
 
@@ -16,6 +17,7 @@ class SignInAccessibilityService : AccessibilityService() {
 
     override fun onServiceConnected() {
         super.onServiceConnected()
+        KeepAliveService.start(this)
         AutomationEngine.attach(this)
     }
 

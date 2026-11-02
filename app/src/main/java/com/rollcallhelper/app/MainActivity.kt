@@ -25,6 +25,7 @@ import com.rollcallhelper.app.automation.AutomationEngine
 import com.rollcallhelper.app.automation.RunState
 import com.rollcallhelper.app.databinding.ActivityMainBinding
 import com.rollcallhelper.app.schedule.SignInScheduler
+import com.rollcallhelper.app.service.KeepAliveService
 import java.time.LocalTime
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -51,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        KeepAliveService.start(this)
         AutomationEngine.prepareNewLaunch()
 
         scheduleOnly = intent.getBooleanExtra(SignInScheduler.EXTRA_SCHEDULE_ONLY, false)

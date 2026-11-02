@@ -16,6 +16,8 @@ tools/gradle-home/
 tools/android-home/
 tools/downloads/
 tools/NetTest.java
+tools/temp/
+tools/adb-temp/
 
 # Real-device artifacts contain personal information (name/class/screenshots)
 artifacts/

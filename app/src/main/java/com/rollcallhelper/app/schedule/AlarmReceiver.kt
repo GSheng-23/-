@@ -7,6 +7,7 @@ import android.os.PowerManager
 import android.util.Log
 import com.rollcallhelper.app.MainActivity
 import com.rollcallhelper.app.notify.AlarmNotifier
+import com.rollcallhelper.app.service.KeepAliveService
 import java.time.LocalTime
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -41,6 +42,9 @@ class AlarmReceiver : BroadcastReceiver() {
         } catch (e: Exception) {
             Log.w("RollCall", "wake screen failed", e)
         }
+
+        // 保持进程在前台服务优先级，避免签到跑到一半被低内存清理。
+        KeepAliveService.start(context)
 
         // 锁屏/后台启动 Activity 可能被系统拦截，通知是兜底。
         AlarmNotifier.show(context, launch)

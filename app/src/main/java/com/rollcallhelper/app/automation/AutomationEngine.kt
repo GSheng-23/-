@@ -68,6 +68,11 @@ object AutomationEngine {
             this.service = null
             _serviceReady.value = false
             log("无障碍服务已断开")
+            if (job?.isActive == true) {
+                job?.cancel()
+                _state.value = RunState.Failed("无障碍服务中途断开，本次签到未完成")
+                notifyResult("签到中断", "无障碍服务中途断开；请重新开启无障碍后再试")
+            }
         }
     }
 
